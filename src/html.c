@@ -43,100 +43,100 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 	if (!node) return;
 	if (!count) return;
 
-	for (struct file_node *child = node->children; child; child = child->next) {
-		// print node
-		fputs("<tr class=\"node ", stream);
-		if (classes) fputs(classes, stream);
-		if (depth) fputs("child", stream);
+	// print node
+	fputs("<tr class=\"node ", stream);
+	if (classes) fputs(classes, stream);
+	if (depth) fputs("child", stream);
 
-		fprintf(stream, "\" id=\"item-%zu\">", *count);
+	fprintf(stream, "\" id=\"item-%zu\">", *count);
 
-		fputs("<td class=\"name\">", stream);
+	fputs("<td class=\"name\">", stream);
 
-		// print depth indents
-		for (size_t i = 0; i < depth; i++) fputs("<span class=\"indent\"></span>", stream);
+	// print depth indents
+	for (size_t i = 0; i < depth; i++) fputs("<span class=\"indent\"></span>", stream);
 
-		if (child->children) {
-			// print separate arrow
-			fputs("<span class=\"arrow\"></span>", stream);
+	if (node->children) {
+		// print separate arrow
+		fputs("<span class=\"arrow\"></span>", stream);
 
-			// details/summary for collapsible nodes
-			fputs("<details class=\"node\"", stream);
-			fputs("><summary>", stream);
-		} else {
-			fputs("<span class=\"no-arrow\"></span>", stream);
-		}
-		// print name
-		fputs("<span class=\"name\">", stream);
-		html_print_escaped(child->name, stream);
-		fputs("</span>", stream);
-		if (child->children) fputs("</summary></details>", stream);
+		// details/summary for collapsible nodes
+		fputs("<details class=\"node\"", stream);
+		fputs("><summary>", stream);
+	} else {
+		fputs("<span class=\"no-arrow\"></span>", stream);
+	}
+	// print name
+	fputs("<span class=\"name\">", stream);
+	html_print_escaped(node->name, stream);
+	fputs("</span>", stream);
+	if (node->children) fputs("</summary></details>", stream);
+	fputs("</td>", stream);
+
+	// print size
+	fputs("<td class=\"size\" title=\"", stream);
+	fprintf(stream, "%zu", node->size);
+	fputs(" bytes\">", stream);
+	print_size(node->size, opts.metric, stream);
+	fputs("</td>", stream);
+
+	// print mode
+	char *octal = get_octal_mode(node->mode);
+	char *symbolic = get_symbolic_mode(node->mode);
+
+	fputs("<td class=\"mode\" title=\"", stream);
+	if (opts.alt_mode) fputs(symbolic, stream);
+	else
+		fputs(octal, stream);
+	fputs("\">", stream);
+	if (opts.alt_mode) fputs(octal, stream);
+	else
+		fputs(symbolic, stream);
+	fputs("</td>", stream);
+
+	// print type
+	fputs("<td class=\"type\">", stream);
+	if (S_ISREG(node->mode)) {
+		fputs("File", stream);
+	} else if (S_ISDIR(node->mode)) {
+		fputs("Directory", stream);
+	} else if (S_ISLNK(node->mode)) {
+		fputs("Symbolic Link", stream);
+	} else if (S_ISCHR(node->mode)) {
+		fputs("Character Device", stream);
+	} else if (S_ISBLK(node->mode)) {
+		fputs("Block Device", stream);
+	} else if (S_ISFIFO(node->mode)) {
+		fputs("FIFO", stream);
+	} else if (S_ISSOCK(node->mode)) {
+		fputs("Socket", stream);
+	} else {
+		fputs("Unknown", stream);
+	}
+	fputs("</td>", stream);
+
+	// print number of items
+	if (node->children) {
+		fputs("<td class=\"items\">", stream);
+		fprintf(stream, "%zu", node->num_items);
 		fputs("</td>", stream);
+	}
 
-		// print size
-		fputs("<td class=\"size\" title=\"", stream);
-		fprintf(stream, "%zu", child->size);
-		fputs(" bytes\">", stream);
-		print_size(child->size, opts.metric, stream);
-		fputs("</td>", stream);
+	fputs("</tr>", stream);
 
-		// print mode
-		char *octal = get_octal_mode(child->mode);
-		char *symbolic = get_symbolic_mode(child->mode);
+	// print children
+	if (node->children) {
+		// create identifier for children to show/hide them when parent is opened/closed
+		size_t class_len = 10 + intlog10(*count) + (classes ? strlen(classes) : 0);
+		char class[class_len];
+		snprintf(class, class_len, "%schild-%zu ", classes ? classes : "", *count);
 
-		fputs("<td class=\"mode\" title=\"", stream);
-		if (opts.alt_mode) fputs(symbolic, stream);
-		else
-			fputs(octal, stream);
-		fputs("\">", stream);
-		if (opts.alt_mode) fputs(octal, stream);
-		else
-			fputs(symbolic, stream);
-		fputs("</td>", stream);
+		(*count)++;
 
-		// print type
-		fputs("<td class=\"type\">", stream);
-		if (S_ISREG(child->mode)) {
-			fputs("File", stream);
-		} else if (S_ISDIR(child->mode)) {
-			fputs("Directory", stream);
-		} else if (S_ISLNK(child->mode)) {
-			fputs("Symbolic Link", stream);
-		} else if (S_ISCHR(child->mode)) {
-			fputs("Character Device", stream);
-		} else if (S_ISBLK(child->mode)) {
-			fputs("Block Device", stream);
-		} else if (S_ISFIFO(child->mode)) {
-			fputs("FIFO", stream);
-		} else if (S_ISSOCK(child->mode)) {
-			fputs("Socket", stream);
-		} else {
-			fputs("Unknown", stream);
-		}
-		fputs("</td>", stream);
-
-		// print number of items
-		if (child->children) {
-			fputs("<td class=\"items\">", stream);
-			fprintf(stream, "%zu", child->num_items);
-			fputs("</td>", stream);
-		}
-
-		fputs("</tr>", stream);
-
-		// print children
-		if (child->children) {
-			// create identifier for children to show/hide them when parent is opened/closed
-			size_t class_len = 10 + intlog10(*count) + (classes ? strlen(classes) : 0);
-			char class[class_len];
-			snprintf(class, class_len, "%schild-%zu ", classes ? classes : "", *count);
-
-			(*count)++;
-
+		for (struct file_node *child = node->children; child; child = child->next) {
 			html_print_node(child, stream, opts, count, depth + 1, class);
-		} else {
-			(*count)++;
 		}
+	} else {
+		(*count)++;
 	}
 }
 
@@ -160,7 +160,8 @@ void html_print_nodes(struct file_node *node, FILE *stream, struct options opts)
 	fputs("<thead><tr><th>Name</th><th>Size</th><th>Mode</th><th>Type</th><th>Items</th></tr></thead>", stream);
 	fputs("<tbody>", stream);
 	size_t count = 0;
-	html_print_node(node, stream, opts, &count, 0, NULL);
+	for (; node; node = node->next)
+		html_print_node(node, stream, opts, &count, 0, NULL);
 	fputs("</tbody></table>", stream);
 
 	// print CSS to show children when parent is opened
