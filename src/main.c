@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <stdbool.h>
-#define eprintf(...) fprintf(stderr, __VA_ARGS__)
 
+#include "util.h"
 #include "tree.h"
 #include "html.h"
 
@@ -13,13 +13,15 @@ int main(int argc, char *argv[]) {
 	opts.dotfiles = true;
 
 	// argument handling
-	while ((opt = getopt_long(argc, argv, ":hVmdr", (struct option[]){
-	                                                        {"help",        no_argument, 0, 'h'},
-	                                                        {"version",     no_argument, 0, 'V'},
-	                                                        {"metric",      no_argument, 0, 'm'},
-	                                                        {"no-dotfiles", no_argument, 0, 'A'},
-	                                                        {"reverse",     no_argument, 0, 'r'},
-	                                                        {0,             0,           0, 0  }
+	while ((opt = getopt_long(argc, argv, ":hVmdrt:a", (struct option[]){
+	                                                         {"help",        no_argument,       0, 'h'},
+	                                                         {"version",     no_argument,       0, 'V'},
+	                                                         {"metric",      no_argument,       0, 'm'},
+	                                                         {"no-dotfiles", no_argument,       0, 'A'},
+	                                                         {"reverse",     no_argument,       0, 'r'},
+	                                                         {"title",       required_argument, 0, 't'},
+															 {"alt-mode",    no_argument,       0, 'a'},
+	                                                         {0,             0,                 0, 0  }
     },
 	                          NULL)) != -1) {
 		switch (opt) {
@@ -30,6 +32,8 @@ int main(int argc, char *argv[]) {
 				printf("-m --metric: Use powers of 1000 instead of 1024 for file sizes\n");
 				printf("-A --no-dotfiles: Ignores files starting with a dot\n");
 				printf("-r --reverse: Items are ordered from small to big instead of big to small\n");
+				printf("-t --title: Set the title of the HTML document\n");
+				printf("-a --alt-mode: Use octal (755) instead of symbolic (rwxr-xr-x) mode\n");
 				return 0;
 			case 'V':
 				printf("%s %s\n", PROJECT_NAME, PROJECT_VERSION);
@@ -47,6 +51,14 @@ int main(int argc, char *argv[]) {
 						break;
 					case 'r':
 						opts.reverse = true;
+						break;
+					case 't':
+						if (opts.title) invalid = true;
+						else
+							opts.title = optarg;
+						break;
+					case 'a':
+						opts.alt_mode = true;
 						break;
 					default:
 						invalid = true;
@@ -81,7 +93,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (head) {
-		// html_print(head);
+		html_print_nodes(head, stdout, opts);
 		tree_free(head);
 	} else {
 		eprintf("No files processed\n");

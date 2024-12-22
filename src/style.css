@@ -1,0 +1,76 @@
+body {
+	background: #ffffff;
+	color: #000000;
+	font-family: Roboto, 'Segoe UI', Arial, sans-serif;
+	font-size: 16px;
+	line-height: 1.6;
+	margin: 5%;
+}
+
+a {
+	color: #2222ff;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+td, th {
+	padding-bottom: 0;
+	padding-top: 0;
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+table {
+	border-spacing: 0;
+}
+
+ul {
+	list-style-type: none;
+}
+
+summary {
+	cursor: pointer;
+}
+
+details {
+	display: inline;
+}
+
+details > summary::marker, details > summary::-webkit-details-marker {
+	display: none;
+	content: "";
+}
+
+span.indent::before {
+	content: '\200b';
+}
+span.indent {
+	background: #666666;
+	display: inline-block;
+	width: 2px;
+	min-width: 2px;
+	margin-right: 10px;
+}
+
+span.no-arrow {
+	margin-right: 14px;
+}
+
+span.arrow::before {
+	position: relative;
+	right: 5px;
+	content: '▶';
+	display: inline-block;
+	transition: transform 0.3s;
+}
+
+span.arrow:has(~details[open])::before {
+	transform: rotate(90deg) translateY(2px);
+}
+
+span.name {
+	word-wrap: break-word;
+}

@@ -4,7 +4,7 @@ project('html-tree', 'c',
   default_options: ['warning_level=3'])
 
 # define source files
-src = files('src/main.c', 'src/html.c', 'src/html.h', 'src/tree.c', 'src/tree.h')
+src = files('src/main.c', 'src/html.c', 'src/html.h', 'src/tree.c', 'src/tree.h', 'src/util.c', 'src/util.h')
 
 # define project metadata
 url = 'https://github.com/mekb-turtle/html-tree'
@@ -16,6 +16,9 @@ add_project_arguments(
   f'-DPROJECT_VERSION="@version@"',
   f'-DPROJECT_URL="@url@"',
   language : 'c')
+
+xxd = find_program('xxd')
+src += custom_target(input: 'src' / 'style.css', command: [xxd, '-i', '-n', '@PLAINNAME@', '@INPUT@', '@OUTPUT@'], output: '@PLAINNAME@.c', install: false, build_by_default: true)
 
 exe = executable('html-tree', sources: src, install: true, dependencies: [
 
