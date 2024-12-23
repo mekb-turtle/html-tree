@@ -60,11 +60,11 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 		fputs("<span class=\"arrow\"></span>", stream);
 
 		// details/summary for collapsible nodes
-		fputs("<details class=\"node\"", stream);
-		fputs("><summary>", stream);
+		fputs("<details class=\"node\"><summary>", stream);
 	} else {
 		fputs("<span class=\"no-arrow\"></span>", stream);
 	}
+
 	// print name
 	fputs("<span class=\"name\">", stream);
 	html_print_escaped(node->name, stream);
@@ -115,11 +115,11 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 	fputs("</td>", stream);
 
 	// print number of items
+	fputs("<td class=\"items\">", stream);
 	if (node->children) {
-		fputs("<td class=\"items\">", stream);
 		fprintf(stream, "%zu", node->num_items);
-		fputs("</td>", stream);
 	}
+	fputs("</td>", stream);
 
 	fputs("</tr>", stream);
 
@@ -157,11 +157,21 @@ void html_print_nodes(struct file_node *node, FILE *stream, struct options opts)
 
 	// print tree
 	fputs("<table class=\"tree\">", stream);
-	fputs("<thead><tr><th>Name</th><th>Size</th><th>Mode</th><th>Type</th><th>Items</th></tr></thead>", stream);
-	fputs("<tbody>", stream);
+	fputs("<thead><tr>", stream);
+
+	const char *headers[] = {"Name", "Size", "Mode", "Type", "Items", NULL};
+
+	// generate columns
+	for (size_t i = 0; headers[i]; i++) {
+		fprintf(stream, "<th>%s</th>", headers[i]);
+	}
+
+	fputs("</tr></thead><tbody>", stream);
+
 	size_t count = 0;
 	for (; node; node = node->next)
 		html_print_node(node, stream, opts, &count, 0, NULL);
+
 	fputs("</tbody></table>", stream);
 
 	// print CSS to show children when parent is opened
