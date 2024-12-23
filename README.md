@@ -21,12 +21,12 @@ This program generates a HTML document from a directory tree.
 - [ ] Minify HTML output
 - [ ] Show extra file attributes
     - [ ] Show file modification/creation/access time in the user's locale
-    - [ ] Show owner/group (UID/GID)
-    - [ ] Show symlink target
-- [ ] Permissions in monospace font
+    - [x] Show owner/group (UID/GID)
+    - [x] Show symlink target
+- [x] Permissions in monospace font
 - [ ] Toggleable columns
 - [ ] Toggleable dark mode (not sure if this is possible without JS)
-- [ ] Fix wrapping with long file names
+- [x] Fix wrapping with long file names
 - [ ] Add animations to expanding/collapsing directories
 
 <br />

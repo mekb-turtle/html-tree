@@ -1,76 +1,91 @@
 body {
-	background: #ffffff;
-	color: #000000;
-	font-family: Roboto, 'Segoe UI', Arial, sans-serif;
-	font-size: 16px;
-	line-height: 1.6;
-	margin: 5%;
+    background: #ffffff;
+    color: #000000;
+    font-family: Roboto, 'Segoe UI', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 5%;
 }
 
 a {
-	color: #2222ff;
-	text-decoration: none;
+    color: #2222ff;
+    text-decoration: none;
 }
 
 a:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
-td, th {
-	padding-bottom: 0;
-	padding-top: 0;
-	padding-left: 8px;
-	padding-right: 8px;
+td,
+th {
+    padding-bottom: 0;
+    padding-top: 0;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 table {
-	border-spacing: 0;
+    border-spacing: 0;
 }
 
 ul {
-	list-style-type: none;
+    list-style-type: none;
 }
 
 summary {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 details {
-	display: inline;
+    display: inline;
 }
 
-details > summary::marker, details > summary::-webkit-details-marker {
-	display: none;
-	content: "";
+details>summary::marker,
+details>summary::-webkit-details-marker {
+    display: none;
+    content: "";
 }
 
 span.indent::before {
-	content: '\200b';
+    content: '\200b';
 }
+
 span.indent {
-	background: #666666;
-	display: inline-block;
-	width: 2px;
-	min-width: 2px;
-	margin-right: 10px;
+    background: #666666;
+    display: inline-block;
+    width: 2px;
+    min-width: 2px;
+    margin-right: 10px;
+}
+
+.code,
+pre,
+code,
+kbd,
+samp {
+    font-family: 'Fira Mono', 'Roboto Mono', 'Courier New', monospace;
+}
+
+.number {
+    text-align: right;
 }
 
 span.no-arrow {
-	margin-right: 14px;
+    margin-right: 14px;
 }
 
 span.arrow::before {
-	position: relative;
-	right: 5px;
-	content: '▶';
-	display: inline-block;
-	transition: transform 0.3s;
+    position: relative;
+    right: 5px;
+    content: '▶';
+    display: inline-block;
+    transition: transform 0.3s;
 }
 
 span.arrow:has(~details[open])::before {
-	transform: rotate(90deg) translateY(2px);
+    transform: rotate(90deg) translateY(2px);
 }
 
-span.name {
-	word-wrap: break-word;
+tr {
+    white-space: nowrap;
 }

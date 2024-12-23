@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <err.h>
 #include <libgen.h>
+#include <unistd.h>
 
 #include "tree.h"
 
@@ -83,6 +84,34 @@ static struct file_node *tree_build_internal(const char *path, struct options op
 	node->mode = st.st_mode;
 	node->children = NULL;
 	node->next = NULL;
+	node->uid = st.st_uid;
+	node->gid = st.st_gid;
+	node->target = NULL;
+
+	if (S_ISLNK(st.st_mode)) {
+		// resolve symlink
+		node->target = malloc(PATH_MAX + 1);
+		if (!node->target) {
+			warn("malloc");
+		error:
+			free(node->path);
+			free(node);
+			return NULL;
+		}
+
+		ssize_t len = readlink(path, node->target, PATH_MAX);
+		if (len < 0) {
+			warn("readlink: %s", path);
+			free(node->target);
+			node->target = NULL;
+		} else if (len >= PATH_MAX) {
+			warnx("symlink target too long: %s", path);
+			free(node->target);
+			node->target = NULL;
+		} else {
+			node->target[len] = '\0';
+		}
+	}
 
 	if (S_ISDIR(st.st_mode)) {
 		node->size = 0;
@@ -90,16 +119,14 @@ static struct file_node *tree_build_internal(const char *path, struct options op
 		// resolve directory path
 		if (!realpath(path, resolved_path)) {
 			warn("realpath: %s", path);
-			return NULL;
+			goto error;
 		}
 
 		// read directory
 		DIR *dir = opendir(path);
 		if (!dir) {
 			warn("opendir: %s", path);
-			free(node->path);
-			free(node);
-			return NULL;
+			goto error;
 		}
 
 		struct dirent *entry;
@@ -146,7 +173,7 @@ struct file_node *tree_build(const char *path, struct options opts) {
 	// this is done only for the root node to avoid following symlinks for every node
 	char resolved_path[PATH_MAX];
 	if (!realpath(path, resolved_path)) {
-		warn("realpath: %s", path);
+		warn("%s", path);
 		return NULL;
 	}
 

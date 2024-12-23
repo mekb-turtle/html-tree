@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
+#include <grp.h>
 
 #include "html.h"
 
@@ -73,24 +75,10 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 	fputs("</td>", stream);
 
 	// print size
-	fputs("<td class=\"size\" title=\"", stream);
+	fputs("<td class=\"size number\" title=\"", stream);
 	fprintf(stream, "%zu", node->size);
 	fputs(" bytes\">", stream);
 	print_size(node->size, opts.metric, stream);
-	fputs("</td>", stream);
-
-	// print mode
-	char *octal = get_octal_mode(node->mode);
-	char *symbolic = get_symbolic_mode(node->mode);
-
-	fputs("<td class=\"mode\" title=\"", stream);
-	if (opts.alt_mode) fputs(symbolic, stream);
-	else
-		fputs(octal, stream);
-	fputs("\">", stream);
-	if (opts.alt_mode) fputs(octal, stream);
-	else
-		fputs(symbolic, stream);
 	fputs("</td>", stream);
 
 	// print type
@@ -115,11 +103,44 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 	fputs("</td>", stream);
 
 	// print number of items
-	fputs("<td class=\"items\">", stream);
+	fputs("<td class=\"items number\">", stream);
 	if (node->children) {
 		fprintf(stream, "%zu", node->num_items);
+	} else if (node->target) {
+		html_print_escaped(node->target, stream);
 	}
 	fputs("</td>", stream);
+
+	// print mode
+	char *octal = get_octal_mode(node->mode);
+	char *symbolic = get_symbolic_mode(node->mode);
+
+	fprintf(stream, "<td class=\"mode code%s\" title=\"", opts.alt_mode ? " number" : "");
+	fputs(opts.alt_mode ? symbolic : octal, stream);
+	fputs("\">", stream);
+	fputs(opts.alt_mode ? octal : symbolic, stream);
+	fputs("</td>", stream);
+
+	// print owner
+	struct passwd *pw = getpwuid(node->uid);
+	fprintf(stream, "<td class=\"owner\" title=\"%u%s\">", node->uid, pw ? "" : " (not found)");
+	if (pw) {
+		html_print_escaped(pw->pw_name, stream);
+	} else {
+		fprintf(stream, "%u", node->uid);
+	}
+	fputs("</td>", stream);
+
+	// print group
+	struct group *gr = getgrgid(node->gid);
+	fprintf(stream, "<td class=\"group\" title=\"%u%s\">", node->gid, gr ? "" : " (not found)");
+	if (gr) {
+		html_print_escaped(gr->gr_name, stream);
+	} else {
+		fprintf(stream, "%u", node->gid);
+	}
+	fputs("</td>", stream);
+
 
 	fputs("</tr>", stream);
 
@@ -130,8 +151,10 @@ static void html_print_node(struct file_node *node, FILE *stream, struct options
 		char class[class_len];
 		snprintf(class, class_len, "%schild-%zu ", classes ? classes : "", *count);
 
+		// increment counter
 		(*count)++;
 
+		// print children
 		for (struct file_node *child = node->children; child; child = child->next) {
 			html_print_node(child, stream, opts, count, depth + 1, class);
 		}
@@ -159,7 +182,7 @@ void html_print_nodes(struct file_node *node, FILE *stream, struct options opts)
 	fputs("<table class=\"tree\">", stream);
 	fputs("<thead><tr>", stream);
 
-	const char *headers[] = {"Name", "Size", "Mode", "Type", "Items", NULL};
+	const char *headers[] = {"Name", "Size", "Type", "Items", "Mode", "Owner", "Group", NULL};
 
 	// generate columns
 	for (size_t i = 0; headers[i]; i++) {
@@ -168,6 +191,7 @@ void html_print_nodes(struct file_node *node, FILE *stream, struct options opts)
 
 	fputs("</tr></thead><tbody>", stream);
 
+	// print nodes
 	size_t count = 0;
 	for (; node; node = node->next)
 		html_print_node(node, stream, opts, &count, 0, NULL);

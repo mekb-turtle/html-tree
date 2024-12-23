@@ -11,6 +11,9 @@ struct file_node {
 	size_t size;
 	size_t num_items;
 	mode_t mode;
+	uid_t uid;
+	gid_t gid;
+	char *target;
 	struct file_node *children;
 	struct file_node *next;
 };

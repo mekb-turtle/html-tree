@@ -14,14 +14,14 @@ int main(int argc, char *argv[]) {
 
 	// argument handling
 	while ((opt = getopt_long(argc, argv, ":hVmdrt:a", (struct option[]){
-	                                                         {"help",        no_argument,       0, 'h'},
-	                                                         {"version",     no_argument,       0, 'V'},
-	                                                         {"metric",      no_argument,       0, 'm'},
-	                                                         {"no-dotfiles", no_argument,       0, 'A'},
-	                                                         {"reverse",     no_argument,       0, 'r'},
-	                                                         {"title",       required_argument, 0, 't'},
-															 {"alt-mode",    no_argument,       0, 'a'},
-	                                                         {0,             0,                 0, 0  }
+	                                                           {"help",        no_argument,       0, 'h'},
+	                                                           {"version",     no_argument,       0, 'V'},
+	                                                           {"metric",      no_argument,       0, 'm'},
+	                                                           {"no-dotfiles", no_argument,       0, 'A'},
+	                                                           {"reverse",     no_argument,       0, 'r'},
+	                                                           {"title",       required_argument, 0, 't'},
+	                                                           {"alt-mode",    no_argument,       0, 'a'},
+	                                                           {0,             0,                 0, 0  }
     },
 	                          NULL)) != -1) {
 		switch (opt) {
